@@ -1,0 +1,12 @@
+digraph {
+	X [label="输入 X" shape=ellipse]
+	C [label=Conv2D fillcolor=lightblue shape=box style=filled]
+	R [label="RCA 注意力" fillcolor=lightgreen shape=box style=filled]
+	F [label="1×1 Conv（融合）" fillcolor=orange shape=box style=filled]
+	Y [label="输出 Y" shape=ellipse]
+	X -> C
+	X -> R
+	C -> F
+	R -> F
+	F -> Y
+}
