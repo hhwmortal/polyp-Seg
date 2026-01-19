@@ -2,7 +2,8 @@
 This repository provides the official code and the dataset.
 ## Overview of the Architecture
 This study proposes an efficient colorectal polyp segmentation network built upon MobileNetV4, designed to enhance computational efficiency while maintaining high segmentation accuracy. The overall architecture is illustrated in Fig. Within a U-Net–like framework, MobileNetV4 is adopted as a lightweight backbone, and both the ACSSA module and the RCAConv Module are integrated to strengthen multi-scale feature representation.
-<img width="1790" height="1023" alt="image" src="https://github.com/user-attachments/assets/219f1947-59e4-4db5-9b84-db4c6c2fd2af" />
+<img width="2154" height="2154" alt="image" src="https://github.com/user-attachments/assets/eda37397-1946-4842-a798-664c92787c3e" />
+
 
 
 ## Dataset Details
