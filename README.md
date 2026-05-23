@@ -1,5 +1,12 @@
 # polyp-Seg
 This repository provides the official code and the dataset.
+
+# Title
+Real-Time Colorectal Polyp Segmentation on High-DeûnitionNarrow-Band Imaging Data via a Lightweight Multi-ScaleAttention Network
+
+## Description
+This repository contains the official PyTorch implementation and dataset for the paper detailing TNA-Net, a real-time and lightweight segmentation framework tailored for Narrow-Band Imaging (NBI) colonoscopy. The proposed network achieves an optimal trade-off between segmentation accuracy and computational efficiency (95 FPS).
+
 ## Overview of the Architecture
 This study proposes an efficient colorectal polyp segmentation network built upon MobileNetV4, designed to enhance computational efficiency while maintaining high segmentation accuracy. The overall architecture is illustrated in Fig. Within a U-Net–like framework, MobileNetV4 is adopted as a lightweight backbone, and both the ACSSA module and the RCAConv Module are integrated to strengthen multi-scale feature representation.
 <img width="2154" height="2154" alt="image" src="https://github.com/user-attachments/assets/eda37397-1946-4842-a798-664c92787c3e" />
@@ -14,6 +21,10 @@ Examples of raw NBI images and their corresponding masks from self-collected dat
 
 The image below presents several representative complex cases from our constructed dataset. The polyps have been annotated for reference, but these cases also present a variety of visual challenges. (a) Blurred edges and reflections fuse the polyp with the mucosa. (b) Low contrast with mucosal folds concealing polyp boundaries. (c) Mottled surface absorbed by vascular texture. (d) Multiple small polyps with low contrast are obscured by colonic secretion. (e) Inapparent lesion boundary due to extreme contrast loss.
 <img width="2204" height="464" alt="image" src="https://github.com/user-attachments/assets/34ac5c5a-0ba9-4692-9ce8-a735bf26de6f" />
+
+
+## Code Information
+
 
 
 ## Main Result
