@@ -35,9 +35,7 @@ def load_data(path):
     return (train_x, train_y), (valid_x, valid_y), (test_x, test_y)
 
 
-'''
- 有真实标签预测
-'''
+
 class DATASET(Dataset):
     def __init__(self, images_path, masks_path, size, transform=None):
         super().__init__()
@@ -74,58 +72,6 @@ class DATASET(Dataset):
     def __len__(self):
         return self.n_samples
 
-
-'''
- 无真实标签预测
-'''
-
-
-# class DATASET(Dataset):
-#     def __init__(self, images_path, masks_path=None, size=(512, 512), transform=None):
-#         super().__init__()
-#
-#         self.images_path = images_path
-#         self.masks_path = masks_path
-#         self.transform = transform
-#         self.size = size
-#         self.n_samples = len(images_path)
-#
-#         # 保存图像文件名
-#         self.image_names = [os.path.basename(path) for path in images_path]
-#
-#     def __getitem__(self, index):
-#         """ Image """
-#         image = cv2.imread(self.images_path[index], cv2.IMREAD_COLOR)
-#
-#         if self.masks_path:
-#             mask = cv2.imread(self.masks_path[index], cv2.IMREAD_GRAYSCALE)
-#         else:
-#             mask = None  # 如果没有提供掩膜路径，则掩膜为 None
-#
-#         if self.transform is not None and mask is not None:
-#             augmentations = self.transform(image=image, mask=mask)
-#             image = augmentations["image"]
-#             mask = augmentations["mask"]
-#         elif self.transform is not None:
-#             augmentations = self.transform(image=image)
-#             image = augmentations["image"]
-#
-#         image = cv2.resize(image, self.size)
-#         image = np.transpose(image, (2, 0, 1))
-#         image = image / 255.0
-#
-#         if mask is not None:
-#             mask = cv2.resize(mask, self.size)
-#             mask = np.expand_dims(mask, axis=0)
-#             mask = mask / 255.0
-#             return image, mask
-#         else:
-#             return image
-#
-#     def __len__(self):
-#         return self.n_samples
-
-
 def train(model, loader, optimizer, loss_fn, device, train_log_path):
     model.train()
     epoch_loss = 0.0
@@ -138,7 +84,7 @@ def train(model, loader, optimizer, loss_fn, device, train_log_path):
     epoch_f2 = 0.0
     epoch_mae = 0.0
 
-    # 使用 tqdm 包装 loader
+
     for i, (x, y) in enumerate(tqdm(loader, desc="Training", ncols=70)):
         x = x.to(device, dtype=torch.float32)
         y = y.to(device, dtype=torch.float32)
@@ -151,7 +97,7 @@ def train(model, loader, optimizer, loss_fn, device, train_log_path):
 
         epoch_loss += loss.item()
 
-        # 计算每个 batch 的指标
+
         batch_dice = []
         batch_iou = []
         batch_acc = []
@@ -178,7 +124,7 @@ def train(model, loader, optimizer, loss_fn, device, train_log_path):
         epoch_f2 += np.mean(batch_f2)
         epoch_mae += np.mean(batch_mae)
 
-    # 在循环外面计算每个 epoch 的平均值
+
     epoch_dice /= len(loader)
     epoch_iou /= len(loader)
     epoch_acc /= len(loader)
@@ -203,7 +149,7 @@ def evaluate(model, loader, loss_fn, device, train_log_path):
     epoch_mae = 0.0
 
     with torch.no_grad():
-        # 使用 tqdm 包装 loader
+
         for i, (x, y) in enumerate(tqdm(loader, desc="Evaluating", ncols=70)):
             x = x.to(device, dtype=torch.float32)
             y = y.to(device, dtype=torch.float32)
@@ -212,7 +158,7 @@ def evaluate(model, loader, loss_fn, device, train_log_path):
             loss = loss_fn(y_pred, y)
             epoch_loss += loss.item()
 
-            # 计算每个 batch 的指标
+
             batch_dice = []
             batch_iou = []
             batch_acc = []
@@ -239,7 +185,7 @@ def evaluate(model, loader, loss_fn, device, train_log_path):
             epoch_f2 += np.mean(batch_f2)
             epoch_mae += np.mean(batch_mae)
 
-    # 计算每个 epoch 的平均值
+
     epoch_dice /= len(loader)
     epoch_iou /= len(loader)
     epoch_acc /= len(loader)
@@ -278,7 +224,7 @@ if __name__ == "__main__":
     batch_size = 8
     num_epochs = 300
     lr = 1e-4
-    early_stopping_patience = 30  # 早停机制，连续30个epoch中验证性能没有改善，则训练将停止，以防止模型过拟合
+    early_stopping_patience = 30
     checkpoint_path = "files/checkpoint.pth"
     path = "./Kvasir-SEG"
 
@@ -338,24 +284,24 @@ if __name__ == "__main__":
     for epoch in range(num_epochs):
         start_time = time.time()
 
-        # 添加 train_log_path 参数
+
         train_loss, train_metrics = train(model, train_loader, optimizer, loss_fn, device, train_log_path)
         valid_loss, valid_metrics = evaluate(model, valid_loader, loss_fn, device, train_log_path)
 
         scheduler.step(valid_loss)
 
-        # 计算 epoch 时间
+
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
-        # 记录每个 epoch 的信息
+
         data_str = f"Epoch: {epoch + 1}/{num_epochs} | Epoch Time: {epoch_mins}m {epoch_secs}s\n"
         data_str += f"\tTrain Loss: {train_loss:.4f} - Dice: {train_metrics[0]:.4f} - IoU: {train_metrics[1]:.4f} - Acc: {train_metrics[2]:.4f} - Recall: {train_metrics[3]:.4f} - Precision: {train_metrics[4]:.4f} - F2: {train_metrics[5]:.4f} - MAE: {train_metrics[6]:.4f}\n"
         data_str += f"\t Val. Loss: {valid_loss:.4f} - Dice: {valid_metrics[0]:.4f} - IoU: {valid_metrics[1]:.4f} - Acc: {valid_metrics[2]:.4f} - Recall: {valid_metrics[3]:.4f} - Precision: {valid_metrics[4]:.4f} - F2: {valid_metrics[5]:.4f} - MAE: {valid_metrics[6]:.4f}\n"
         print_and_save(train_log_path, data_str)
 
-        # 检查是否需要保存模型
-        if valid_metrics[0] > best_valid_metrics:  # Dice (valid_metrics[0] 现在是 Dice)
+
+        if valid_metrics[0] > best_valid_metrics:
             data_str = f"Valid Dice improved from {best_valid_metrics:2.4f} to {valid_metrics[0]:2.4f}. Saving checkpoint: {checkpoint_path}"
             print_and_save(train_log_path, data_str)
 
@@ -366,7 +312,7 @@ if __name__ == "__main__":
         elif valid_metrics[0] < best_valid_metrics:
             early_stopping_count += 1
 
-        # 早停机制
+
         if early_stopping_count == early_stopping_patience:
             data_str = f"Early stopping: validation loss stops improving from last {early_stopping_patience} continuously.\n"
             print_and_save(train_log_path, data_str)

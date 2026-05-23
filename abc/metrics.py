@@ -53,7 +53,7 @@ def iou_score(y_true, y_pred):
 
 
 def accuracy_score(y_true, y_pred):
-    return (y_pred == y_true).mean()  # 返回所有像素的平均准确率
+    return (y_pred == y_true).mean()
 
 
 def recall(y_true, y_pred):

@@ -11,7 +11,7 @@ MNV4ConvSmall_BLOCK_SPECS = {
         "block_name": "convbn",
         "num_blocks": 1,
         "block_specs": [
-            [3, 64, 3, 2]  # 输入通道为3（RGB图像），输出通道为64，卷积核大小3x3，步长为2，进行下采样
+            [3, 64, 3, 2]
         ]
     },
     "layer1": {
@@ -31,15 +31,15 @@ MNV4ConvSmall_BLOCK_SPECS = {
         ]
     },
     "layer3": {
-        "block_name": "uib",  # 该层使用了UIB（可学习的卷积）块
-        "num_blocks": 6,  # 该层有六个block
+        "block_name": "uib",
+        "num_blocks": 6,
         "block_specs": [
-            [256, 512, 5, 5, True, 2, 3],  # 第一个block：输入通道256，输出通道512，卷积核5x5，步长2
-            [512, 512, 0, 3, True, 1, 2],  # 第二个block：输入输出通道512，卷积核3x3，步长1
-            [512, 512, 0, 3, True, 1, 2],  # 第三个block：与上一个block相同
-            [512, 512, 0, 3, True, 1, 2],  # 第四个block：与上一个block相同
-            [512, 512, 0, 3, True, 1, 2],  # 第五个block：与上一个block相同
-            [512, 512, 3, 0, True, 1, 4],  # 第六个block：卷积核3x3，步长1，执行上采样
+            [256, 512, 5, 5, True, 2, 3],
+            [512, 512, 0, 3, True, 1, 2],
+            [512, 512, 0, 3, True, 1, 2],
+            [512, 512, 0, 3, True, 1, 2],
+            [512, 512, 0, 3, True, 1, 2],
+            [512, 512, 3, 0, True, 1, 4],
         ]
     },
     "layer4": {

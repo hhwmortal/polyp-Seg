@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from torch.nn import init
-from resnet import resnet50
 import torch.nn.functional as F
 import math
 from mobilenetv4 import MobileNetV4ConvSmall
@@ -25,7 +24,7 @@ class Conv2D(nn.Module):
         return x
 
 
-# 融合的RCA
+
 class Conv2D_RCA_Dynamic(nn.Module):
     def __init__(self, in_c, out_c, kernel_size=3, padding=1, stride=1, dilation=1, bias=True, act=True,
                  ratio=1, band_kernel_size=11, square_kernel_size=3):
@@ -37,7 +36,7 @@ class Conv2D_RCA_Dynamic(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         att = self.rca(x)
-        x = x * att  # 让 RCA 作为动态权重调制 Conv2D 输出
+        x = x * att
         return x
 
 
@@ -95,7 +94,7 @@ class residual_transformer_block(nn.Module):
         return x
 
 
-# 定义h_sigmoid激活函数
+# Define the h_sigmoid activation function.
 class h_sigmoid(nn.Module):
     def __init__(self, inplace=False):
         super(h_sigmoid, self).__init__()
@@ -105,7 +104,7 @@ class h_sigmoid(nn.Module):
         return self.relu(x + 3) / 6
 
 
-# 定义h_swish激活函数
+# Define the h-swish activation function.
 class h_swish(nn.Module):
     def __init__(self, inplace=False):
         super(h_swish, self).__init__()
@@ -119,22 +118,22 @@ class h_swish(nn.Module):
 class CoordAtt(nn.Module):
     def __init__(self, inp, oup, reduction=32):
         super(CoordAtt, self).__init__()
-        # 水平和垂直方向的自适应平均池化
-        self.pool_h = nn.AdaptiveAvgPool2d((None, 1))  # 水平方向
-        self.pool_w = nn.AdaptiveAvgPool2d((1, None))  # 垂直方向
+        # Horizontal and Vertical Adaptive Average Pooling
+        self.pool_h = nn.AdaptiveAvgPool2d((None, 1))  # Horizontal direction
+        self.pool_w = nn.AdaptiveAvgPool2d((1, None))  # Vertical direction
 
         mip = max(8, inp // reduction)  # 计算中间层的通道数
 
-        # 1x1卷积降维
+        # 1x1 Convolution for Dimensionality Reduction
         self.conv1 = nn.Conv2d(inp, mip, kernel_size=1, stride=1, padding=0)
         self.bn1 = nn.BatchNorm2d(mip)
         self.act = h_swish()
 
-        # 1x1卷积用于计算注意力权重
+        # 1x1 convolutions are used to compute attention weights.
         self.conv_h = nn.Conv2d(mip, oup, kernel_size=1, stride=1, padding=0)
         self.conv_w = nn.Conv2d(mip, oup, kernel_size=1, stride=1, padding=0)
 
-        # 动态调整注意力强度
+        # Dynamically Adjusting Attention Intensity
         self.alpha = nn.Parameter(torch.tensor(0.5))
 
     def forward(self, x):
@@ -144,21 +143,21 @@ class CoordAtt(nn.Module):
         x_h = self.pool_h(x)
         x_w = self.pool_w(x).permute(0, 1, 3, 2)
 
-        # 拼接和特征压缩
+        # Concatenation and Feature Compression
         y = torch.cat([x_h, x_w], dim=2)
         y = self.conv1(y)
         y = self.bn1(y)
         y = self.act(y)
 
-        # 分割回原始方向
+        # Split back to the original direction
         x_h, x_w = torch.split(y, [h, w], dim=2)
         x_w = x_w.permute(0, 1, 3, 2)
 
-        # 生成注意力权重
+        # Generate Attention Weights
         a_h = self.conv_h(x_h).sigmoid()
         a_w = self.conv_w(x_w).sigmoid()
 
-        # 动态调整注意力权重
+        # Dynamically Adjusting Attention Weights
         out = identity * (a_w * a_h) + identity * (1 - a_w * a_h) * self.alpha
 
         return out
@@ -186,12 +185,12 @@ class MultiScaleSpatialAttention(nn.Module):
         return torch.sigmoid(feat)
 
 
-class ACSSA(nn.Module):
+class AAFM(nn.Module):
     def __init__(self, in_channels, rate=4, oup=None):
-        super(ACSSA, self).__init__()
-        # 如果没有传入 oup 参数，使用 in_channels 作为默认值
-        oup = oup or in_channels  # 默认值为 in_channels
-        self.CoordAtt = CoordAtt(in_channels, oup)  # 这里传入 oup 参数
+        super(AAFM, self).__init__()
+
+        oup = oup or in_channels
+        self.CoordAtt = CoordAtt(in_channels, oup)
         self.spatial_attention = MultiScaleSpatialAttention(in_channels, rate)
 
     def channel_shuffle(self, x, groups):
@@ -202,15 +201,15 @@ class ACSSA(nn.Module):
         return x.view(B, -1, H, W)
 
     def forward(self, x):
-        # 通道注意力模块
+        # Channel Attention Module
         ch_att = self.CoordAtt(x)
         x = x * ch_att
 
-        # 自适应分组（示例中使用固定分组，可以考虑设计动态分组）
+        # Adaptive Grouping
         groups = max(2, x.size(1) // 16)
         x = self.channel_shuffle(x, groups)
 
-        # 空间注意力模块
+        # Spatial Attention Module
         sp_att = self.spatial_attention(x)
         out = x * sp_att
         return out
@@ -263,7 +262,7 @@ class Model(nn.Module):
         self.e3 = Conv2D_RCA_Dynamic(256, 64, kernel_size=1, padding=0)
         self.e4 = Conv2D_RCA_Dynamic(512, 64, kernel_size=1, padding=0)
 
-        self.ACSSA = ACSSA(128)
+        self.AAFM = AAFM(128)
 
         """ Decoder """
         self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
@@ -280,7 +279,7 @@ class Model(nn.Module):
         x1 = self.layer0(x0)  # [-1, 64, h/2, w/2]
 
         x2 = self.layer1(x1)  # [-1, 128, h/4, w/4]
-        x2 = self.ACSSA(x2)
+        x2 = self.AAFM(x2)
 
         x3 = self.layer2(x2)  # [-1, 256, h/8, w/8]
 
