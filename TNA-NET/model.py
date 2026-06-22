@@ -114,7 +114,7 @@ class h_swish(nn.Module):
         return x * self.sigmoid(x)
 
 
-# 定义Coordinate Attention模块
+# Coordinate Attention
 class CoordAtt(nn.Module):
     def __init__(self, inp, oup, reduction=32):
         super(CoordAtt, self).__init__()
@@ -122,7 +122,7 @@ class CoordAtt(nn.Module):
         self.pool_h = nn.AdaptiveAvgPool2d((None, 1))  # Horizontal direction
         self.pool_w = nn.AdaptiveAvgPool2d((1, None))  # Vertical direction
 
-        mip = max(8, inp // reduction)  # 计算中间层的通道数
+        mip = max(8, inp // reduction)  
 
         # 1x1 Convolution for Dimensionality Reduction
         self.conv1 = nn.Conv2d(inp, mip, kernel_size=1, stride=1, padding=0)
