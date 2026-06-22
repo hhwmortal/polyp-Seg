@@ -131,7 +131,7 @@ if __name__ == "__main__":
     """ Testing the model """
     test_metrics = test(model, test_loader, device, output_dir)
 
-    # 打印测试结果
+
     print("Test Metrics:")
     print(
         f"Dice: {test_metrics[0]:.4f} - IoU: {test_metrics[1]:.4f} - Acc: {test_metrics[2]:.4f} - Recall: {test_metrics[3]:.4f} - Precision: {test_metrics[4]:.4f} - F2: {test_metrics[5]:.4f} - MAE: {test_metrics[6]:.4f}")
