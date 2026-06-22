@@ -46,7 +46,7 @@ class DATASET(Dataset):
         self.size = size
         self.n_samples = len(images_path)
 
-        # 保存图像文件名
+
         self.image_names = [os.path.basename(path) for path in images_path]
 
     def __getitem__(self, index):
